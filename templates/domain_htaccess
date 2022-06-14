@@ -1,0 +1,4 @@
+PassengerFriendlyErrorPages off
+PassengerPython /home/pacs/{{pac}}/users/{{user}}/ralph/.venv/bin/python3
+SetEnv PYTHONPATH /home/pacs/{{pac}}/users/{{user}}/ralph
+SetEnv DJANGO_SETTINGS_MODULE settings.config

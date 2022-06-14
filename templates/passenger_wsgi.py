@@ -1,0 +1,1 @@
+from ralph.wsgi import application

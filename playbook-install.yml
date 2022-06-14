@@ -33,9 +33,9 @@
     become: yes
     become_user: "{{pac}}-{{user}}"
     git:
-      repo: https://github.com/allegro/ralph/.git
+      repo: https://github.com/allegro/ralph.git
       dest: /home/pacs/{{pac}}/users/{{user}}/ralph
-      version: {{ralph_version}}
+      version: "{{ralph_version}}"
     when: not workingtreeback.stat.exists
 
   - name: create venv
@@ -73,5 +73,16 @@
   ########################
   ## setup the apache site
   ########################
+  - name: upload domain htaccess file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template:
+      src: "templates/domain_htaccess"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/.htaccess"
 
-  # TODO
+  - name: upload passenger wsgi file
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    template:
+      src: "templates/passenger_wsgi.py"
+      dest: "/home/pacs/{{pac}}/users/{{user}}/doms/{{domain}}/app-ssl/passenger_wsgi.py"
