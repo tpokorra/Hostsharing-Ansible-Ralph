@@ -1,0 +1,77 @@
+---
+- hosts: ralph
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    # see https://docs.ansible.com/ansible/latest/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+    ansible_common_remote_group: "{{pac}}"
+    ansible_remote_tmp: ~/.ansible/tmp
+
+  tasks:
+  - name: Create user, domain and database
+    import_tasks: tasks/hs_basis.yml
+
+  #################################
+  ## create directories
+  #################################
+
+  #################################
+  ## install requirements
+  #################################
+  - name: Install node.js
+    import_tasks: tasks/hs_nodejs.yml
+
+  ##################################
+  ## install ralph
+  ##################################
+  - name: Check for git working tree
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    stat:
+      path: /home/pacs/{{pac}}/users/{{user}}/ralph
+    register: workingtreeback
+  - name: get ralph repo
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    git:
+      repo: https://github.com/allegro/ralph/.git
+      dest: /home/pacs/{{pac}}/users/{{user}}/ralph
+      version: {{ralph_version}}
+    when: not workingtreeback.stat.exists
+
+  - name: create venv
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    command: python3 -m venv .venv chdir="/home/pacs/{{pac}}/users/{{user}}/ralph"
+    args:
+      creates: "/home/pacs/{{pac}}/users/{{user}}/ralph/.venv"
+
+  - name: install pip packages
+    become: yes
+    become_user: "{{pac}}-{{user}}"
+    shell: |
+      source .venv/bin/activate
+      pip install --upgrade pip wheel || exit -1
+      pip install -r requirements.txt || exit -1
+      touch /home/pacs/{{pac}}/users/{{user}}/.ansible_pip_installed
+    args:
+      executable: /bin/bash
+      chdir: "/home/pacs/{{pac}}/users/{{user}}/ralph"
+      creates: "/home/pacs/{{pac}}/users/{{user}}/.ansible_pip_installed"
+
+  ##################################
+  ## configuration
+  ##################################
+
+  # TODO
+
+  ######################
+  ## initialise instance
+  ######################
+
+  # TODO
+
+  ########################
+  ## setup the apache site
+  ########################
+
+  # TODO
